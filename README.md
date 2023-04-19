@@ -1,2 +1,5 @@
-# Intelligent-Commodity-Operation-Center-v3
-The Vue3 project of the intelligent commodity operation center e-commerce backend is a commodity management system built based on the Vue3 framework. We provide a series of intelligent application software and solutions, focusing on intelligent customer management and assisting enterprises in smart management.
+## 说明
+* 基于Vue3的电商中台管理项目
+* 技术栈: TS + Vue3 + VueRouter4 + Pinia + ElementPlus
+* 当前为完成版
+* 学习参见 文档 文件夹下的MD文件
