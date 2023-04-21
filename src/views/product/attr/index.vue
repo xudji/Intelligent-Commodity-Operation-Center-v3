@@ -1,19 +1,16 @@
 <template>
-  <div>
-    Attr
-  </div>
+  <CategorySelector></CategorySelector>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 export default defineComponent({
-  name: 'Attr',
-})
+  name: "Attr",
+});
 </script>
 <script lang="ts" setup>
-import { ref } from 'vue'
-
-
+import CategorySelector from "@/components/CategorySelector/index.vue";
+import { ref } from "vue";
 </script>
 
 <style scoped></style>

@@ -1,6 +1,6 @@
 export interface trademarkModel {
-  id: number,
-  logUrl: string,
+  id?: number,
+  logoUrl: string,
   tmName: string,
 }
 
