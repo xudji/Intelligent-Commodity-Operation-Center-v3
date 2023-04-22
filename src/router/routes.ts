@@ -44,8 +44,11 @@ export const staticRoutes: Array<RouteRecordRaw> = [
       }
     }]
   },
+
+
   {
     path: '/product',
+    name: 'product',
     component: () => import('@/layout/index.vue'),
     redirect: '/product/trademark/list',
     meta: {
@@ -57,53 +60,40 @@ export const staticRoutes: Array<RouteRecordRaw> = [
         path: '/product/category/list',
         component: () => import('@/views/product/category/index.vue'),
         meta: {
-          title: '分类管理'
-        }
+          title: '分类管理',
+        },
       },
       {
         path: '/product/trademark/list',
         component: () => import('@/views/product/trademark/index.vue'),
         meta: {
           title: '品牌管理',
-        }
+        },
       },
-
       {
         path: '/product/attr/list',
         component: () => import('@/views/product/attr/index.vue'),
         meta: {
           title: '平台属性管理',
-        }
+        },
       },
-
-
       {
         path: '/product/spu/list',
         component: () => import('@/views/product/spu/index.vue'),
         meta: {
           title: 'SPU管理',
-        }
+
+        },
       },
       {
         path: '/product/sku/list',
-        name: 'Sku',
         component: () => import('@/views/product/sku/index.vue'),
         meta: {
           title: 'SKU管理',
-        }
+        },
       }
     ]
   },
-
-
-
-
-
-
-
-
-
-
 
 
 

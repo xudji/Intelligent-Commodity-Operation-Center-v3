@@ -1,41 +1,40 @@
 import request from '@/utils/request'
-import type { trademarkListModelResponse, trademarkModel } from '@/api/model/trademarkModel'
 
-// 枚举
+import type { tradeMarkListModelRes,tradeMarkModel } from '@/api/product/model/tradeMarkModel'
+
 enum Api {
-  getTradeMarkApi = '/admin/product/baseTrademark',
-  saveTradeMarkApi = '/admin/product/baseTrademark/save',
-  deleteTradeMarkApi = '/admin/product/baseTrademark/remove',
-  updateTrademarkApi = '/admin/product/baseTrademark/update'
-}
+    getTrademarkApi = '/admin/product/baseTrademark',
+    addTrademarkApi = '/admin/product/baseTrademark/save',
+    delTrademarkApi = '/admin/product/baseTrademark/remove',
+    updateTrademarkApi = '/admin/product/baseTrademark/update',
+} 
 
 
-// 获取品牌数据
-const reqGetTrademarkList = (page: number, limit: number) => {
-  return request.get<any, trademarkListModelResponse>(`${Api.getTradeMarkApi}/${page}/${limit}`)
+// 1.获取品牌
+const reqbaseTrademark = (page: number, limit: number) => {
+  return request.get<any, tradeMarkListModelRes>(`${Api.getTrademarkApi}/${page}/${limit}`)
+}
+// 2.添加品牌
+const reqAddTrademark = (trademark:tradeMarkModel) => {
+  return request.post<any, null>(Api.addTrademarkApi,trademark)
+}
+// 3.删除品牌
+const reqDelTrademark = (id:number) => {
+  return request.delete<any, null>(`${Api.delTrademarkApi}/${id}`)
 }
 
-// 添加品牌数据
-const reqSaveTrademark = (trademarkInfo: trademarkModel) => {
-  return request.post<any, null>(Api.saveTradeMarkApi, trademarkInfo)
+//4.修改品牌
+const reqUpdateTrademark = (trademark:tradeMarkModel) => {
+  return request.put<any, null>(Api.updateTrademarkApi,trademark)
 }
 
-// 删除品牌数据
-const reqDeleteTrademark = (id: number) => {
-  return request.delete<any, null>(`${Api.deleteTradeMarkApi}/${id}`)
-}
-
-// 修改品牌数据
-const reqUpdateTrademark = (trademarkInfo: trademarkModel) => {
-  return request.put<any, null>(Api.updateTrademarkApi, trademarkInfo)
-}
 
 
 
 export {
-  reqGetTrademarkList,
-  reqSaveTrademark,
-  reqDeleteTrademark,
+  reqbaseTrademark,
+  reqAddTrademark,
+  reqDelTrademark,
   reqUpdateTrademark
 }
 

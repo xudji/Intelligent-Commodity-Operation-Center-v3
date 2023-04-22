@@ -1,4 +1,4 @@
-const TokenKey = 'intelligent_token'
+const TokenKey = 'shop_token'
 
 export function getToken() {
   return localStorage.getItem(TokenKey)

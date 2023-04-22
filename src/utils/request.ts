@@ -19,13 +19,12 @@ const service = axios.create({
 // 添加请求拦截器
 service.interceptors.request.use(
 	(config) => {
-		// 请求头携带token 
-		const userInfoStore = useUserInfoStore()
-		// 如果有token就给它传上去
-		if (userInfoStore.token) {
-			(<any>config.headers)['token'] = userInfoStore.token;
+		// 添加token传给后台
+		// 判断有无token 有就传
+		const userToken = useUserInfoStore()
+		if (userToken.token) {
+			(config.headers as any)['token'] = userToken.token // 类型断言 强制转换为指定的类型，从而绕过 TypeScript 的类型检查机制
 		}
-
 		return config;
 	}
 );

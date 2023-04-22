@@ -1,21 +1,27 @@
-/**
- * 此文件是用来发送请求，获取三级分类的接口函数文件
- */
-// 1. 引入异步对象
 import request from '@/utils/request'
 
+
 enum Api {
-  getCategory1ListApi = '/admin/product/getCategory1',
-  getCategory2ListApi = '/admin/product/getCategory2',
-  getCategory3ListApi = '/admin/product/getCategory3'
-}
-export const reqGetCategory1ListData = () => {
-    return  request.get(Api.getCategory1ListApi)  
+  getCategory1Api = '/admin/product/getCategory1',
+  getCategory2Api = '/admin/product/getCategory2',
+  getCategory3Api = '/admin/product/getCategory3',
+ 
 }
 
-export const reqGetCategory2ListData = (category1Id:number) => {
-  return request.get(`${Api.getCategory2ListApi}/${category1Id}`)
+const reqCategory1List = () => {
+  return request.get<any, null>(Api.getCategory1Api)
 }
-export const reqGetCategory3ListData = (category2Id:number) => {
-  return request.get(`${Api.getCategory3ListApi}/${category2Id}`)
+
+const reqCategory2List = (category2Id: number) => {
+  return request.get<any, null>(`${Api.getCategory2Api}/${category2Id}`)
+}
+const reqCategory3List = (category3Id: number) => {
+  return request.get<any, null>(`${Api.getCategory3Api}/${category3Id}`)
+}
+
+
+export {
+  reqCategory1List,
+  reqCategory2List,
+  reqCategory3List
 }

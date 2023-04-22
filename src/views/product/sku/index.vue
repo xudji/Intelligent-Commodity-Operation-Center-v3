@@ -1,6 +1,6 @@
 <template>
   <div>
-    Sku
+    sku
   </div>
 </template>
 
