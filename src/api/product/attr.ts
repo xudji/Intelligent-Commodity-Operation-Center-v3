@@ -13,7 +13,7 @@ const reqAttrInfo = ({
     category2Id,
     category3Id,
 }:CategoryIdsModel) => {
-    return request.get<any, AttrValueInfoModel[]>(Api.getAttrInfo + `/${category1Id}/${category2Id}/${category3Id}`)
+    return request.get<any, AttrInfoModel>(Api.getAttrInfo + `/${category1Id}/${category2Id}/${category3Id}`)
 }
 
 // 2.删除attr

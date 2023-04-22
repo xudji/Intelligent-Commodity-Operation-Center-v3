@@ -54,13 +54,15 @@
                     <el-table-column label="属性值名称" width="400px">
                         <template v-slot="{ row, $index }">
                             <el-input ref="inutRef" v-if="row.isShowInput" v-model="row.valueName" @blur="blurInput(row,$index)"></el-input>
-                            <span v-else> {{ row.valueName }} </span>
+                            <span v-else @click="row.isShowInput = true" > {{ row.valueName }} </span>
                         </template>
 
 
                     </el-table-column>
                     <el-table-column label="操作">
+                       <template v-slot="{$index}">
                         <el-button type="danger" size="small" :icon="Delete" @click="delAttrInput($index)"></el-button>
+                       </template>
                     </el-table-column>
                 </el-table>
                 <el-button type="primary" >保存</el-button>
@@ -83,7 +85,7 @@ import { ElMessageBox, ElMessage } from "element-plus";
 import CategorySelector from '@/components/CategorySelector/index.vue'
 import { useCategoryListStore } from '@/stores/categoryList'
 import { reqAttrInfo, reqDelAttr } from '@/api/product/attr'
-import type { AttrInfoModel,AttrValueInfoModel,CategoryIdsModel,AttrListModel} from '@/api/product/model/attrModel'
+import type { AttrInfoModel,AttrValueInfoModel,AttrListModel} from '@/api/product/model/attrModel'
 const attrStore = useCategoryListStore()
 const attrList = ref<AttrListModel>([])
 const isAttrShow = ref<boolean>(true)
