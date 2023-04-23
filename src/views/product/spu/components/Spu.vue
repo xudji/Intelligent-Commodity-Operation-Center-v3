@@ -69,7 +69,7 @@ export default defineComponent({
 });
 </script>
 <script lang="ts" setup>
-import { ref, reactive } from "vue";
+import { ref, reactive,onMounted } from "vue";
 import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
 import type { UploadProps, UploadUserFile } from "element-plus";
 import { ElMessage } from "element-plus";
