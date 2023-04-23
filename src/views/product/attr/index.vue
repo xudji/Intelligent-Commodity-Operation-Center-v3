@@ -44,7 +44,8 @@
                     <el-input v-model="attr.attrName" placeholder="请输入属性名" style="width: 160px;"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" :icon="Plus" @click="addAttrValue" :disabled="!attr.attrName" >添加属性值</el-button>
+                    <el-button type="primary" :icon="Plus" @click="addAttrValue"
+                        :disabled="!attr.attrName">添加属性值</el-button>
                     <el-button @click="cancelAdd">取消</el-button>
                 </el-form-item>
             </el-form>
@@ -53,19 +54,20 @@
                     <el-table-column label="序号" type="index" width="140"></el-table-column>
                     <el-table-column label="属性值名称" width="400px">
                         <template v-slot="{ row, $index }">
-                            <el-input ref="inutRef" v-if="row.isShowInput" v-model="row.valueName" @blur="blurInput(row,$index)"></el-input>
-                            <span v-else @click="row.isShowInput = true" > {{ row.valueName }} </span>
+                            <el-input ref="inutRef" v-if="row.isShowInput" v-model="row.valueName"
+                                @blur="blurInput(row, $index)"></el-input>
+                            <span v-else @click="row.isShowInput = true"> {{ row.valueName }} </span>
                         </template>
 
 
                     </el-table-column>
                     <el-table-column label="操作">
-                       <template v-slot="{$index}">
-                        <el-button type="danger" size="small" :icon="Delete" @click="delAttrInput($index)"></el-button>
-                       </template>
+                        <template v-slot="{ row, $index }">
+                            <el-button type="danger" size="small" :icon="Delete" @click="delAttrInput($index)"></el-button>
+                        </template>
                     </el-table-column>
                 </el-table>
-                <el-button type="primary" >保存</el-button>
+                <el-button type="primary" @click="saveAttr">保存</el-button>
                 <el-button @click="cancelAdd">取消</el-button>
             </div>
         </div>
@@ -84,8 +86,8 @@ import { Plus, Delete, Edit } from "@element-plus/icons-vue";
 import { ElMessageBox, ElMessage } from "element-plus";
 import CategorySelector from '@/components/CategorySelector/index.vue'
 import { useCategoryListStore } from '@/stores/categoryList'
-import { reqAttrInfo, reqDelAttr } from '@/api/product/attr'
-import type { AttrInfoModel,AttrValueInfoModel,AttrListModel} from '@/api/product/model/attrModel'
+import { reqAttrInfo, reqDelAttr, reqSaveAttr } from '@/api/product/attr'
+import type { AttrInfoModel, AttrValueInfoModel, AttrListModel } from '@/api/product/model/attrModel'
 const attrStore = useCategoryListStore()
 const attrList = ref<AttrListModel>([])
 const isAttrShow = ref<boolean>(true)
@@ -98,7 +100,6 @@ const attr = reactive<AttrInfoModel>({
     attrValueList: [],
     categoryId: 0,
     categoryLevel: 3,
-    id: 1
 })
 
 // 1.监听有3id 发请求渲染表格数据
@@ -115,15 +116,7 @@ watch(
     { immediate: true },
 )
 
-// 2.渲染表格数据请求
-const getAttrInfo = async () => {
-    const res  = await reqAttrInfo({
-        category1Id: attrStore.category1Id as number,
-        category2Id: attrStore.category2Id as number,
-        category3Id: attrStore.category3Id as number
-    })
-    attrList.value = res
-}
+
 
 // 3.删除attr表格数据
 const confirmDel = async (id: number) => {
@@ -135,16 +128,17 @@ const confirmDel = async (id: number) => {
 const addAttr = () => {
     isAttrShow.value = false;
     isCategorySelectorShow.value = true
-   
+
 
 
 }
 
 // 5.添加属性值
 const addAttrValue = () => {
-    
+
     attr.attrValueList.push({
         valueName: '',
+        attrId: attr.id,
         isShowInput: true // 是否显示输入框
     })
     nextTick(() => {
@@ -161,19 +155,51 @@ const cancelAdd = () => {
 }
 
 // 7.属性值输入框失去焦点
-const blurInput = (row:AttrValueInfoModel,index:number) => {
-   // 删除空值
-   if(!row.valueName) return attr.attrValueList.splice(index,1)
-   row.isShowInput = false
+const blurInput = (row: AttrValueInfoModel, index: number) => {
+    // 删除空值
+    if (!row.valueName) return attr.attrValueList.splice(index, 1)
+    row.isShowInput = false
 
 }
 
 // 8.删除输入值
-const delAttrInput = (index:number) => {
-    attr.attrValueList.splice(index,1)    
+const delAttrInput = (index: number) => {
+    attr.attrValueList.splice(index, 1)
 }
 
-// 9.保存
+// 9.保存输入值
+const saveAttr = async () => {
+    // 发送attr到服务器
+    attr.categoryId = attrStore.category3Id as number
+    attr.attrValueList = attr.attrValueList.filter(value => {
+    if (value.valueName) {
+      delete value.isShowInput
+      return true
+    }
+    return false
+  })
+
+    await reqSaveAttr(attr)
+    ElMessage.success('保存成功')
+    // 回到列表页面
+    isAttrShow.value = true
+    // 重新获取列表显示
+    getAttrInfo()
+}
+
+
+
+
+
+// 2.渲染表格数据请求
+const getAttrInfo = async () => {
+    const res = await reqAttrInfo({
+        category1Id: attrStore.category1Id as number,
+        category2Id: attrStore.category2Id as number,
+        category3Id: attrStore.category3Id as number
+    })
+    attrList.value = res
+}
 
 </script>
 
