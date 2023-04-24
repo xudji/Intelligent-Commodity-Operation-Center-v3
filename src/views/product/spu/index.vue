@@ -1,7 +1,7 @@
 <template>
   <CategorySelector :disabled="showState !== StateCate.SPULIST_STATE"></CategorySelector>
   <SpuList v-if="showState === StateCate.SPULIST_STATE" @changeState="changeState"></SpuList>
-  <Spu v-if="showState === StateCate.SPU_STATE"></Spu>
+  <Spu v-if="showState === StateCate.SPU_STATE" @changeState="changeState"></Spu>
   <Sku v-if="showState === StateCate.SKU_STATE"></Sku>
 </template>
 
