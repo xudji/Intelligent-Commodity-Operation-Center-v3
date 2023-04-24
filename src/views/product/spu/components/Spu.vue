@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top: 10px">
     <el-card>
-      <el-form label-width="100px" :model="spuInfo">
+      <el-form label-width="100px" :model="spuInfo" :rules="rules">
         <el-form-item label="SPU名称" prop="spuName">
           <el-input placeholder="SPU名称" v-model="spuInfo.spuName"></el-input>
         </el-form-item>
@@ -41,15 +41,18 @@
           </el-dialog>
         </el-form-item>
         <el-form-item label="销售属性" prop="spuSaleAttrList">
-          <el-select placeholder="还有3项未选择" v-model="spuInfo.spuSaleAttr">
-            <el-option
-              v-for="a1 in attrList"
-              :key="a1.id"
-              :value="a1.name"
-              :label="a1.name"
-            ></el-option>
-          </el-select>
-          <el-button type="primary" @click="addSale">添加销售属性</el-button>
+            <el-select
+              :placeholder="`还有${filterSpuSaleAttrList.length}项未选择`"
+              v-model="spuInfo.spuSaleAttr"
+            >
+              <el-option
+                v-for="a1 in filterSpuSaleAttrList"
+                :key="a1.id"
+                :value="a1.name"
+                :label="a1.name"
+              ></el-option>
+            </el-select>
+            <el-button type="primary" @click="addSale">添加销售属性</el-button>
         </el-form-item>
         <el-form-item>
           <el-table border :data="spuInfo?.spuSaleAttrList">
@@ -63,16 +66,50 @@
                 <span>{{ row.saleAttrName }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="属性值名称列表"></el-table-column>
-            <el-table-colum label="操作">
-              <el-tooltip effect="dark" content="删除SKU" placement="top">
-                <el-button
-                  type="danger"
+            <el-table-column label="属性值名称列表">
+              <template v-slot="{ row,$index }">
+                <el-tag
+                  v-for="tag in row.spuSaleAttrValueList"
+                  :key="tag"
+                  class="mx-1"
+                  closable
+                  :disable-transitions="false"
+                  @close="handleClose(row,$index)"
+                >
+                  {{ tag.saleAttrValueName }}
+                </el-tag>
+                <el-input
+                  v-if="row.inputVisible"
+                  ref="InputRef"
+                  v-model="inputValue"
+                  class="ml-1 w-20"
                   size="small"
-                  :icon="Delete"
-                ></el-button>
-              </el-tooltip>
-            </el-table-colum>
+                  @keyup.enter="handleInputConfirm(row)"
+                  @blur="handleInputConfirm(row)"
+                  style="width: 100px;"
+                />
+                <el-button
+                  v-else
+                  class="button-new-tag ml-1"
+                  size="small"
+                  @click="showInput(row)"
+                >
+                  + New
+                </el-button>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作">
+              <template v-slot="{ row, $index }">
+                <el-tooltip effect="dark" content="删除SKU" placement="top">
+                  <el-button
+                    type="danger"
+                    size="small"
+                    :icon="Delete"
+                    @click="delAttr($index)"
+                  ></el-button>
+                </el-tooltip>
+              </template>
+            </el-table-column>
           </el-table>
         </el-form-item>
         <el-form-item>
@@ -91,13 +128,28 @@ export default defineComponent({
 });
 </script>
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed, nextTick } from "vue";
 import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
-import type { UploadProps, UploadUserFile } from "element-plus";
-import { ElMessage } from "element-plus";
+import type { UploadProps, UploadUserFile,FormRules } from "element-plus";
+import { ElMessage, ElInput } from "element-plus";
 import { reqTrademarkList, reqBaseSaleAttrList } from "@/api/product/spu";
 const traMarkList = ref([]);
 const attrList = ref([]);
+
+// el-tag
+const inputValue = ref("");
+const inputVisible = ref(false);
+const InputRef = ref<InstanceType<typeof ElInput>>();
+
+
+// 表单验证规则
+ const rules: FormRules = {
+    spuName: [{ required: true, message: '请输入SPU名称', trigger: 'blur' }],
+    tmId: [{ required: true, message: '请选择SPU品牌' }],
+    description: [{ required: true, message: '请输入SPU描述', trigger: 'blur' }],
+    spuImageList: [{ required: true, message: '请上传SPU图片', type: 'array' }],
+    spuSaleAttrList: [{ required: true, message: '请添加SPU销售属性', type: 'array' }],
+  };
 
 // 保存时提交数据
 const spuInfo = reactive({
@@ -109,8 +161,6 @@ const spuInfo = reactive({
   spuSaleAttr: "", // 收集选中的属性
   category3Id: "", // 三级id
 });
-
-
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -173,13 +223,55 @@ const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
 };
 
 // 添加销售属性
-const addSale = () => {
+const addSale = (row) => {
+    if(!spuInfo.spuSaleAttr) return  
   spuInfo.spuSaleAttrList.push({
+    inputVisible: false,
     saleAttrName: spuInfo.spuSaleAttr,
-    spuSaleAttrValueList: []
-  })
-  spuInfo.spuSaleAttr = '' // 清空下拉框选项
-  
+    spuSaleAttrValueList: [],
+  });
+  spuInfo.spuSaleAttr = ""; // 清空下拉框选项
+};
+
+// 计算销售属性数量
+// 添加后的和基础的比较如果是的话过滤掉
+const filterSpuSaleAttrList = computed(() => {
+  return attrList.value.filter((attr) => {
+    return !spuInfo.spuSaleAttrList.find(
+      (item) => attr.name === item.saleAttrName
+    );
+  });
+});
+
+// 删除销售属性
+const delAttr = (index) => {
+  spuInfo.spuSaleAttrList.splice(index, 1);
+};
+
+// el-tag事件
+const handleClose = (row, index) => {
+  // dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
+  row.spuSaleAttrValueList.splice(row.spuSaleAttrValueList.indexOf(index), 1);
+};
+// 展示输入框
+const showInput = (row) => {
+  // inputVisible.value = true
+  row.inputVisible = true;
+  nextTick(() => {
+    InputRef.value!.input!.focus();
+  });
+};
+const handleInputConfirm = (row) => {
+  if (inputValue.value) {
+    // dynamicTags.value.push(inputValue.value)
+    row.spuSaleAttrValueList.push({
+      saleAttrValueName: inputValue.value,
+      saleAttrName: row.saleAttrName,
+    });
+  }
+  // inputVisible.value = false
+  row.inputVisible = false;
+  inputValue.value = "";
 };
 </script>
 
