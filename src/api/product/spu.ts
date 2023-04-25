@@ -24,7 +24,7 @@ const reqBaseSaleAttrList = () => {
   
 //4.保存
 const reqGetSaveSpuInfo = (spuInfo) => {
-  return request.post<any,any>(Api.getSaveSpuInfo + spuInfo )
+  return request.post<any,any>(Api.getSaveSpuInfo , spuInfo )
 }
 
 export {

@@ -10,17 +10,17 @@
         <el-table-column prop="description" label="SPU描述">
         </el-table-column>
         <el-table-column label="操作">
-          <el-tooltip effect="dark" content="添加SKU" placement="top">
+          <el-tooltip effect="dark" content="添加SPU" placement="top">
             <el-button type="primary" size="small" :icon="Plus"></el-button>
           </el-tooltip>
-          <el-tooltip effect="dark" content="修改SKU" placement="top">
+          <el-tooltip effect="dark" content="修改SPU" placement="top">
             <el-button type="primary" size="small" :icon="Edit"></el-button>
           </el-tooltip>
-          <el-tooltip effect="dark" content="查看SKU列表" placement="top">
+          <el-tooltip effect="dark" content="查看SPU列表" placement="top">
             <el-button type="info" size="small" :icon="InfoFilled"></el-button>
           </el-tooltip>
-          <el-tooltip effect="dark" content="删除SKU" placement="top">
-            <el-button type="danger" size="small" :icon="Delete"></el-button>
+          <el-tooltip effect="dark" content="删除SPU" placement="top">
+            <el-button type="danger" size="small" :icon="Delete" @click=""></el-button>
           </el-tooltip>
         </el-table-column>
       </el-table>

@@ -1,7 +1,12 @@
 <template>
   <div style="margin-top: 10px">
     <el-card>
-      <el-form label-width="100px" :model="spuInfo" :rules="rules" ref="ruleFormRef">
+      <el-form
+        label-width="100px"
+        :model="spuInfo"
+        :rules="rules"
+        ref="ruleFormRef"
+      >
         <el-form-item label="SPU名称" prop="spuName">
           <el-input placeholder="SPU名称" v-model="spuInfo.spuName"></el-input>
         </el-form-item>
@@ -118,7 +123,9 @@
           </el-table>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="saveSpuInfo(ruleFormRef)">保存</el-button>
+          <el-button type="primary" @click="saveSpuInfo(ruleFormRef)"
+            >保存</el-button
+          >
           <el-button @click="cancalSpu">取消</el-button>
         </el-form-item>
       </el-form>
@@ -135,12 +142,24 @@ export default defineComponent({
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed, nextTick } from "vue";
 import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
-import type { UploadProps, UploadUserFile, FormRules,FormInstance } from "element-plus";
+import type {
+  UploadProps,
+  UploadUserFile,
+  FormRules,
+  FormInstance,
+} from "element-plus";
 import { ElMessage, ElInput } from "element-plus";
-import { reqTrademarkList, reqBaseSaleAttrList,reqGetSaveSpuInfo } from "@/api/product/spu";
+import {
+  reqTrademarkList,
+  reqBaseSaleAttrList,
+  reqGetSaveSpuInfo,
+} from "@/api/product/spu";
+import {useCategoryListStore} from '@/stores/categoryList'
 const traMarkList = ref([]);
 const attrList = ref([]);
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
+const cateStore = useCategoryListStore()
+
 
 // el-tag
 const inputValue = ref("");
@@ -216,9 +235,9 @@ const handleAvatarSuccess: UploadProps["onSuccess"] = (
   uploadFile,
   uploadFiles
 ) => {
-  spuInfo.spuImageList = uploadFiles
+  spuInfo.spuImageList = uploadFiles;
   // 清除校验规则
-  ruleFormRef?.value.clearValidate('spuImageList') 
+  ruleFormRef?.value.clearValidate("spuImageList");
 };
 // 上传文件之前验证
 const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
@@ -303,33 +322,46 @@ const handleInputConfirm = (row) => {
   inputValue.value = "";
 };
 
-
-
-
-
-
-
-
-
-
 // 保存
 const saveSpuInfo = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return
-  await formEl.validate(async(valid, fields) => {
+  if (!formEl) return;
+  await formEl.validate(async (valid, fields) => {
     if (valid) {
-        
+      spuInfo.category3Id = cateStore.category3Id
+      spuInfo.spuImageList = spuInfo.spuImageList.map((item) => {
+        return {
+          imgName: item.name,
+          imgUrl: item.response?.data,
+        };
+      });
 
-
-
-
-     await reqGetSaveSpuInfo(spuInfo)
-    } else {
-      console.log('error submit!', fields)
+      /* "category3Id": 0,
+  "description": "string",
+  "id": 0,
+  "spuImageList": [
+    {
+      "createTime": "2023-04-25T14:24:01.791Z",
+      "id": 0,
+      "imgName": "string",
+      "imgUrl": "string",
+      "spuId": 0,
+      "updateTime": "2023-04-25T14:24:01.791Z"
     }
-  })
-}
+  ],
+  "spuName": "string",
+  "imgName": "string",
+      "imgUrl": "string",
+ 
+      "tmId": 0, */
 
-
+      await reqGetSaveSpuInfo(spuInfo);
+      ElMessage.success('保存成功')
+      emits("changeState", 1);
+    } else {
+      console.log("error submit!", fields);
+    }
+  });
+};
 </script>
 
 <style scoped></style>
