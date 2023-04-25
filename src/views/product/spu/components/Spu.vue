@@ -52,7 +52,7 @@
                 :label="a1.name"
               ></el-option>
             </el-select>
-            <el-button type="primary" @click="addSale">添加销售属性</el-button>
+            <el-button type="primary" @click="addSale"  :disabled="!spuInfo.spuSaleAttr">添加销售属性</el-button>
         </el-form-item>
         <el-form-item>
           <el-table border :data="spuInfo?.spuSaleAttrList">
@@ -223,8 +223,7 @@ const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
 };
 
 // 添加销售属性
-const addSale = (row) => {
-    if(!spuInfo.spuSaleAttr) return  
+const addSale = () => {
   spuInfo.spuSaleAttrList.push({
     inputVisible: false,
     saleAttrName: spuInfo.spuSaleAttr,
