@@ -24,7 +24,7 @@
               <el-button type="primary" size="small" :icon="Plus"></el-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="修改SPU" placement="top">
-              <el-button type="primary" size="small" :icon="Edit"></el-button>
+              <el-button type="primary" size="small" :icon="Edit" @click="editSpu(row)"></el-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="查看SPU列表" placement="top">
               <el-button
@@ -80,13 +80,13 @@ export default defineComponent({
 <script lang="ts" setup>
 import { ref, onMounted, reactive, watch, nextTick } from "vue";
 import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
-import { reqSpuList, reqDelSpu } from "@/api/product/spu";
+import { reqSpuList, reqDelSpu,reqUpdateSpu } from "@/api/product/spu";
 import { useCategoryListStore } from "@/stores/categoryList";
 import { ElMessage } from "element-plus";
 
 const cateStore = useCategoryListStore();
 const spuList = ref([]);
-const emits = defineEmits(["changeState"]);
+const emits = defineEmits(["changeState","saveSpuInfo"]);
 // 分页器数据
 const pageSize = ref(3);
 const small = ref(false);
@@ -130,6 +130,7 @@ watch(
 // 3.添加ASpu
 const AddSpu = () => {
   emits("changeState", 2);
+  emits('saveSpuInfo',{})
 };
 // 4.删除SPu
 const delSpu = async (id: number) => {
@@ -137,5 +138,11 @@ const delSpu = async (id: number) => {
   ElMessage.success("删除成功");
   getSpuList()
 };
+//5.修改Spu
+const editSpu = async (row) => {
+   // 传数据回显
+ emits('saveSpuInfo',row)
+ emits("changeState", 2);
+}
 </script>
 <style scoped></style>

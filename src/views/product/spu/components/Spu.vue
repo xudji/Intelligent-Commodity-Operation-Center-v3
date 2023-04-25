@@ -29,7 +29,7 @@
         </el-form-item>
         <el-form-item label="SPU图片" prop="spuImageList">
           <el-upload
-            v-model:file-list="fileList"
+            v-model:file-list="spuInfo.spuImageList"
             :action="`${BASE_URL}/admin/product/fileUpload`"
             list-type="picture-card"
             :on-preview="handlePictureCardPreview"
@@ -153,13 +153,18 @@ import {
   reqTrademarkList,
   reqBaseSaleAttrList,
   reqGetSaveSpuInfo,
+  reqUpdateSpu,
+  reqGetSpuImageListData,
+  reqGetSpuSaleAttrListData,
 } from "@/api/product/spu";
-import {useCategoryListStore} from '@/stores/categoryList'
+import { useCategoryListStore } from "@/stores/categoryList";
+
+const props = defineProps(["editSpuInfo"]);
+
 const traMarkList = ref([]);
 const attrList = ref([]);
 const ruleFormRef = ref<FormInstance>();
-const cateStore = useCategoryListStore()
-
+const cateStore = useCategoryListStore();
 
 // el-tag
 const inputValue = ref("");
@@ -186,6 +191,7 @@ const spuInfo = reactive({
   spuSaleAttrList: [], // 基本销售属性
   spuSaleAttr: "", // 收集选中的属性
   category3Id: "", // 三级id
+  ...props.editSpuInfo,
 });
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -195,19 +201,46 @@ const emits = defineEmits(["changeState"]);
 const cancalSpu = () => {
   emits("changeState", 1);
 };
-
+onMounted(() => {
+  console.log(props.editSpuInfo);
+  console.log(spuInfo.spuImageList, spuInfo.spuSaleAttrList);
+});
 // 发请求获取品牌列表和销售属性
 onMounted(async () => {
   // promise.all写法发两个请求
   try {
-    const [resTrademarkList, resBaseSaleAttrList] = await Promise.all([
-      reqTrademarkList(),
-      reqBaseSaleAttrList(),
-    ]);
+    const id = spuInfo.id;
+    let promises = [reqTrademarkList(), reqBaseSaleAttrList()];
+    if (id) {
+      promises = promises.concat([
+        reqGetSpuImageListData(id),
+        reqGetSpuSaleAttrListData(id),
+      ]);
+    }
+    const [
+      resTrademarkList,
+      resBaseSaleAttrList,
+      resSpuImageListData,
+      resSpuSaleAttrListData,
+    ] = await Promise.all(promises);
     console.log("商标列表：", resTrademarkList);
     console.log("销售属性列表：", resBaseSaleAttrList);
     traMarkList.value = resTrademarkList;
     attrList.value = resBaseSaleAttrList;
+
+    if (resSpuImageListData && resSpuSaleAttrListData) {
+      // spuInfo.spuImageList = responseSpuImageList
+
+      spuInfo.spuImageList = resSpuImageListData.map((item) => {
+        return {
+          ...item,
+          name: item.imgName,
+          url: item.imgUrl,
+        };
+      });
+
+      spuInfo.spuSaleAttrList = resSpuSaleAttrListData;
+    }
   } catch (error) {
     console.error(error);
   }
@@ -261,8 +294,10 @@ const addSale = () => {
     ElMessage.error("请至少添加一个销售属性");
     return;
   }
+  const id = attrList.value.find((item) => item.name == spuInfo.spuSaleAttr).id;
   spuInfo.spuSaleAttrList.push({
     inputVisible: false,
+    baseSaleAttrId: id,
     saleAttrName: spuInfo.spuSaleAttr,
     spuSaleAttrValueList: [],
   });
@@ -311,10 +346,12 @@ const handleInputConfirm = (row) => {
     inputValue.value = "";
     return;
   }
+  const { baseSaleAttrId, saleAttrName } = row;
   if (inputValue.value) {
     row.spuSaleAttrValueList.push({
+      baseSaleAttrId,
       saleAttrValueName: inputValue.value,
-      saleAttrName: row.saleAttrName,
+      saleAttrName,
     });
   }
 
@@ -327,7 +364,7 @@ const saveSpuInfo = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      spuInfo.category3Id = cateStore.category3Id
+      spuInfo.category3Id = cateStore.category3Id;
       spuInfo.spuImageList = spuInfo.spuImageList.map((item) => {
         return {
           imgName: item.name,
@@ -351,11 +388,14 @@ const saveSpuInfo = async (formEl: FormInstance | undefined) => {
   "spuName": "string",
   "imgName": "string",
       "imgUrl": "string",
- 
       "tmId": 0, */
 
-      await reqGetSaveSpuInfo(spuInfo);
-      ElMessage.success('保存成功')
+      if (spuInfo.id) {
+        await reqUpdateSpu(spuInfo);
+      } else {
+        await reqGetSaveSpuInfo(spuInfo);
+      }
+      ElMessage.success("保存成功");
       emits("changeState", 1);
     } else {
       console.log("error submit!", fields);

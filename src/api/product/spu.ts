@@ -7,7 +7,10 @@ enum Api {
   getBaseSaleAttrList = '/admin/product/baseSaleAttrList',
   getTrademarkList = '/admin/product/baseTrademark/getTrademarkList',
   getSaveSpuInfo = '/admin/product/saveSpuInfo',
-  getDelSpu = '/admin/product/deleteSpu'
+  getDelSpu = '/admin/product/deleteSpu',
+  getUpdateSpu = '/admin/product/updateSpuInfo',
+  getSpuImageListApi = '/admin/product/spuImageList',
+  getSpuSaleAttrListApi = '/admin/product/spuSaleAttrList'
 }
 
 // 1.获取spu列表
@@ -31,8 +34,19 @@ const reqGetSaveSpuInfo = (spuInfo) => {
 }
 
 //5.删除Spu
-const reqDelSpu = (spuId:number) => {
+const reqDelSpu = (spuId: number) => {
   return request.delete<any, any>(Api.getDelSpu + `/${spuId} `)
+}
+//6.修改Spu
+const reqUpdateSpu = (spuInfo) => {
+  return request.post<any, any>(Api.getUpdateSpu, spuInfo)
+}
+const reqGetSpuImageListData = (spuId: number) => {
+  return request.get(Api.getSpuImageListApi + `/${spuId}`)
+}
+// 4.7 获取待编辑的spuInfo中的销售属性及值
+const reqGetSpuSaleAttrListData = (spuId: number) => {
+  return request.get(Api.getSpuSaleAttrListApi + `/${spuId}`)
 }
 
 export {
@@ -40,6 +54,9 @@ export {
   reqBaseSaleAttrList,
   reqTrademarkList,
   reqGetSaveSpuInfo,
-  reqDelSpu
+  reqDelSpu,
+  reqUpdateSpu,
+  reqGetSpuImageListData,
+  reqGetSpuSaleAttrListData
 }
 
