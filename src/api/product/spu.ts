@@ -3,8 +3,8 @@ import request from '@/utils/request'
 enum Api {
   getSpuList = '/admin/product',
   getBaseSaleAttrList = '/admin/product/baseSaleAttrList',
-  getTrademarkList = '/admin/product/baseTrademark/getTrademarkList'
-  
+  getTrademarkList = '/admin/product/baseTrademark/getTrademarkList',
+  getSaveSpuInfo = '/admin/product/saveSpuInfo'
 }
 // 1.获取spu列表
 const reqSpuList = (page: number, limit:number,category3Id:number) => {
@@ -22,9 +22,15 @@ const reqBaseSaleAttrList = () => {
   return request.get<any, any>(Api.getBaseSaleAttrList)
 }
   
+//4.保存
+const reqGetSaveSpuInfo = (spuInfo) => {
+  return request.post<any,any>(Api.getSaveSpuInfo + spuInfo )
+}
+
 export {
   reqSpuList,
   reqBaseSaleAttrList,
-  reqTrademarkList
+  reqTrademarkList,
+  reqGetSaveSpuInfo
 }
 

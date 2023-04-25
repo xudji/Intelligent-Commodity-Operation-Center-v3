@@ -1,7 +1,7 @@
 <template>
   <div style="margin-top: 10px">
     <el-card>
-      <el-form label-width="100px" :model="spuInfo" :rules="rules">
+      <el-form label-width="100px" :model="spuInfo" :rules="rules" ref="ruleFormRef">
         <el-form-item label="SPU名称" prop="spuName">
           <el-input placeholder="SPU名称" v-model="spuInfo.spuName"></el-input>
         </el-form-item>
@@ -41,18 +41,23 @@
           </el-dialog>
         </el-form-item>
         <el-form-item label="销售属性" prop="spuSaleAttrList">
-            <el-select
-              :placeholder="`还有${filterSpuSaleAttrList.length}项未选择`"
-              v-model="spuInfo.spuSaleAttr"
-            >
-              <el-option
-                v-for="a1 in filterSpuSaleAttrList"
-                :key="a1.id"
-                :value="a1.name"
-                :label="a1.name"
-              ></el-option>
-            </el-select>
-            <el-button type="primary" @click="addSale"  :disabled="!spuInfo.spuSaleAttr">添加销售属性</el-button>
+          <el-select
+            :placeholder="`还有${filterSpuSaleAttrList.length}项未选择`"
+            v-model="spuInfo.spuSaleAttr"
+          >
+            <el-option
+              v-for="a1 in filterSpuSaleAttrList"
+              :key="a1.id"
+              :value="a1.name"
+              :label="a1.name"
+            ></el-option>
+          </el-select>
+          <el-button
+            type="primary"
+            @click="addSale"
+            :disabled="!spuInfo.spuSaleAttr"
+            >添加销售属性</el-button
+          >
         </el-form-item>
         <el-form-item>
           <el-table border :data="spuInfo?.spuSaleAttrList">
@@ -67,14 +72,14 @@
               </template>
             </el-table-column>
             <el-table-column label="属性值名称列表">
-              <template v-slot="{ row,$index }">
+              <template v-slot="{ row, $index }">
                 <el-tag
                   v-for="tag in row.spuSaleAttrValueList"
                   :key="tag"
                   class="mx-1"
                   closable
                   :disable-transitions="false"
-                  @close="handleClose(row,$index)"
+                  @close="handleClose(row, $index)"
                 >
                   {{ tag.saleAttrValueName }}
                 </el-tag>
@@ -86,7 +91,7 @@
                   size="small"
                   @keyup.enter="handleInputConfirm(row)"
                   @blur="handleInputConfirm(row)"
-                  style="width: 100px;"
+                  style="width: 100px"
                 />
                 <el-button
                   v-else
@@ -113,7 +118,7 @@
           </el-table>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">保存</el-button>
+          <el-button type="primary" @click="saveSpuInfo(ruleFormRef)">保存</el-button>
           <el-button @click="cancalSpu">取消</el-button>
         </el-form-item>
       </el-form>
@@ -130,26 +135,28 @@ export default defineComponent({
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed, nextTick } from "vue";
 import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
-import type { UploadProps, UploadUserFile,FormRules } from "element-plus";
+import type { UploadProps, UploadUserFile, FormRules,FormInstance } from "element-plus";
 import { ElMessage, ElInput } from "element-plus";
-import { reqTrademarkList, reqBaseSaleAttrList } from "@/api/product/spu";
+import { reqTrademarkList, reqBaseSaleAttrList,reqGetSaveSpuInfo } from "@/api/product/spu";
 const traMarkList = ref([]);
 const attrList = ref([]);
+const ruleFormRef = ref<FormInstance>()
 
 // el-tag
 const inputValue = ref("");
 const inputVisible = ref(false);
 const InputRef = ref<InstanceType<typeof ElInput>>();
 
-
 // 表单验证规则
- const rules: FormRules = {
-    spuName: [{ required: true, message: '请输入SPU名称', trigger: 'blur' }],
-    tmId: [{ required: true, message: '请选择SPU品牌' }],
-    description: [{ required: true, message: '请输入SPU描述', trigger: 'blur' }],
-    spuImageList: [{ required: true, message: '请上传SPU图片', type: 'array' }],
-    spuSaleAttrList: [{ required: true, message: '请添加SPU销售属性', type: 'array' }],
-  };
+const rules: FormRules = {
+  spuName: [{ required: true, message: "请输入SPU名称", trigger: "blur" }],
+  tmId: [{ required: true, message: "请选择SPU品牌" }],
+  description: [{ required: true, message: "请输入SPU描述", trigger: "blur" }],
+  spuImageList: [{ required: true, message: "请上传SPU图片", type: "array" }],
+  spuSaleAttrList: [
+    { required: true, message: "请添加SPU销售属性", type: "array" },
+  ],
+};
 
 // 保存时提交数据
 const spuInfo = reactive({
@@ -206,9 +213,12 @@ const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
 // 上传成功
 const handleAvatarSuccess: UploadProps["onSuccess"] = (
   response,
-  uploadFile
+  uploadFile,
+  uploadFiles
 ) => {
-  imageUrl.value = URL.createObjectURL(uploadFile.raw!);
+  spuInfo.spuImageList = uploadFiles
+  // 清除校验规则
+  ruleFormRef?.value.clearValidate('spuImageList') 
 };
 // 上传文件之前验证
 const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
@@ -221,9 +231,17 @@ const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
   }
   return true;
 };
-
 // 添加销售属性
 const addSale = () => {
+  // 添加时判断如果销售属性值为空return
+  const spuSaleAttrList = spuInfo.spuSaleAttrList;
+  if (
+    spuSaleAttrList.length &&
+    spuSaleAttrList.some((item) => item.spuSaleAttrValueList.length === 0)
+  ) {
+    ElMessage.error("请至少添加一个销售属性");
+    return;
+  }
   spuInfo.spuSaleAttrList.push({
     inputVisible: false,
     saleAttrName: spuInfo.spuSaleAttr,
@@ -261,17 +279,57 @@ const showInput = (row) => {
   });
 };
 const handleInputConfirm = (row) => {
+  // 判断属性列表和输入值是否一样，一样就return
+  const spuSaleAttrValueList = row.spuSaleAttrValueList;
+  if (
+    spuSaleAttrValueList.length &&
+    spuSaleAttrValueList.find(
+      (item) => item.saleAttrValueName === inputValue.value
+    )
+  ) {
+    ElMessage.error("属性值相同，请重新输入!");
+    row.inputVisible = false;
+    inputValue.value = "";
+    return;
+  }
   if (inputValue.value) {
-    // dynamicTags.value.push(inputValue.value)
     row.spuSaleAttrValueList.push({
       saleAttrValueName: inputValue.value,
       saleAttrName: row.saleAttrName,
     });
   }
-  // inputVisible.value = false
+
   row.inputVisible = false;
   inputValue.value = "";
 };
+
+
+
+
+
+
+
+
+
+
+// 保存
+const saveSpuInfo = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  await formEl.validate(async(valid, fields) => {
+    if (valid) {
+        
+
+
+
+
+     await reqGetSaveSpuInfo(spuInfo)
+    } else {
+      console.log('error submit!', fields)
+    }
+  })
+}
+
+
 </script>
 
 <style scoped></style>
