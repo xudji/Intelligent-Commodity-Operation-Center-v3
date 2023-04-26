@@ -83,17 +83,17 @@ import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
 import { reqSpuList, reqDelSpu,reqUpdateSpu } from "@/api/product/spu";
 import { useCategoryListStore } from "@/stores/categoryList";
 import { ElMessage } from "element-plus";
-
+import type { SpuInfoModel } from '@/api/product/model/spuModels';
 const cateStore = useCategoryListStore();
-const spuList = ref([]);
+const spuList = ref<SpuInfoModel[]>([]);
 const emits = defineEmits(["changeState","saveSpuInfo"]);
 // 分页器数据
-const pageSize = ref(3);
-const small = ref(false);
-const background = ref(false);
-const disabled = ref(false);
-const total = ref(100);
-const currentPage = ref(1);
+const pageSize = ref<number>(3);
+const small = ref<boolean>(false);
+const background = ref<boolean>(false);
+const disabled = ref<boolean>(false);
+const total = ref<number>(100);
+const currentPage = ref<number>(1);
 
 // 每页条数改变
 const handleSizeChange = (val: number) => {
@@ -147,7 +147,7 @@ const delSpu = async (id: number) => {
   getSpuList()
 };
 //5.修改Spu
-const editSpu = async (row) => {
+const editSpu = async (row:SpuInfoModel) => {
    // 传数据回显
  emits('saveSpuInfo',row)
  emits("changeState", 2);

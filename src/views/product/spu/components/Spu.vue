@@ -159,10 +159,14 @@ import {
 } from "@/api/product/spu";
 import { useCategoryListStore } from "@/stores/categoryList";
 
-const props = defineProps(["editSpuInfo"]);
+import type { tradeMarkListModel } from '@/api/product/model/tradeMarkModel';
+import type { BaseSaleAttrListModel, SpuImageListModel, SpuInfoModel, SpuSaleAttrModel } from '@/api/product/model/spuModels';
+const props = defineProps<{
+  editSpuInfo: SpuInfoModel; // 传入的时候， 也要添加类型约束
+}>();
 
-const traMarkList = ref([]);
-const attrList = ref([]);
+const traMarkList = ref<tradeMarkListModel>([]);
+const attrList = ref<BaseSaleAttrListModel>([]);
 const ruleFormRef = ref<FormInstance>();
 const cateStore = useCategoryListStore();
 
@@ -183,16 +187,7 @@ const rules: FormRules = {
 };
 
 // 保存时提交数据
-const spuInfo = reactive({
-  spuName: "",
-  tmId: "", // spu品牌
-  description: "", // spu描述
-  spuImageList: [], // 存储spu图片的数组
-  spuSaleAttrList: [], // 基本销售属性
-  spuSaleAttr: "", // 收集选中的属性
-  category3Id: "", // 三级id
-  ...props.editSpuInfo,
-});
+const spuInfo = reactive<SpuInfoModel>(props.editSpuInfo);
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -315,24 +310,24 @@ const filterSpuSaleAttrList = computed(() => {
 });
 
 // 删除销售属性
-const delAttr = (index) => {
+const delAttr = (index:number) => {
   spuInfo.spuSaleAttrList.splice(index, 1);
 };
 
 // el-tag事件
-const handleClose = (row, index) => {
+const handleClose = (row:SpuSaleAttrModel, index:number) => {
   // dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1)
   row.spuSaleAttrValueList.splice(row.spuSaleAttrValueList.indexOf(index), 1);
 };
 // 展示输入框
-const showInput = (row) => {
+const showInput = (row:SpuSaleAttrModel) => {
   // inputVisible.value = true
   row.inputVisible = true;
   nextTick(() => {
     InputRef.value!.input!.focus();
   });
 };
-const handleInputConfirm = (row) => {
+const handleInputConfirm = (row:SpuSaleAttrModel) => {
   // 判断属性列表和输入值是否一样，一样就return
   const spuSaleAttrValueList = row.spuSaleAttrValueList;
   if (
@@ -364,11 +359,11 @@ const saveSpuInfo = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      spuInfo.category3Id = cateStore.category3Id;
+      spuInfo.category3Id = cateStore.category3Id as number;
       spuInfo.spuImageList = spuInfo.spuImageList.map((item) => {
         return {
           imgName: item.name,
-          imgUrl: item.response?.data,
+          imgUrl: item.response ? item.response.data : item.imgUrl
         };
       });
 
@@ -392,10 +387,13 @@ const saveSpuInfo = async (formEl: FormInstance | undefined) => {
 
       if (spuInfo.id) {
         await reqUpdateSpu(spuInfo);
+           // 提示用户 添加成功了
+      ElMessage.success("更新spu数据成功了...");
       } else {
         await reqGetSaveSpuInfo(spuInfo);
-      }
       ElMessage.success("保存成功");
+
+      }
       emits("changeState", 1);
     } else {
       console.log("error submit!", fields);
