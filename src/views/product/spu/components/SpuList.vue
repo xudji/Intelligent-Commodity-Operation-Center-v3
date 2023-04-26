@@ -20,13 +20,13 @@
         <el-table-column prop="description" label="SPU描述"> </el-table-column>
         <el-table-column label="操作">
           <template v-slot="{ row }">
-            <el-tooltip effect="dark" content="添加SPU" placement="top">
-              <el-button type="primary" size="small" :icon="Plus"></el-button>
+            <el-tooltip effect="dark" content="添加SKU" placement="top">
+              <el-button type="primary" size="small" :icon="Plus" @click="addSKU(row)"></el-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="修改SPU" placement="top">
               <el-button type="primary" size="small" :icon="Edit" @click="editSpu(row)"></el-button>
             </el-tooltip>
-            <el-tooltip effect="dark" content="查看SPU列表" placement="top">
+            <el-tooltip effect="dark" content="查看SKU列表" placement="top">
               <el-button
                 type="info"
                 size="small"
@@ -105,7 +105,6 @@ const handleSizeChange = (val: number) => {
 // 当前页码改变
 const handleCurrentChange = (val: number) => {
   pageSize.value = val;
-  
   getSpuList();
 
 };
@@ -135,7 +134,7 @@ watch(
   }
 );
 
-// 3.添加ASpu
+// 3.添加Spu
 const AddSpu = () => {
   emits("changeState", 2);
   emits('saveSpuInfo',{})
@@ -151,6 +150,11 @@ const editSpu = async (row:SpuInfoModel) => {
    // 传数据回显
  emits('saveSpuInfo',row)
  emits("changeState", 2);
+}
+//6.添加sku
+const addSKU = (row:SpuInfoModel) => {
+ emits('saveSpuInfo',row)
+ emits("changeState", 3);
 }
 </script>
 <style scoped></style>
