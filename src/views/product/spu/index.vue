@@ -12,7 +12,7 @@
     @changeState="changeState"
     :editSpuInfo="editSpuInfo"
   ></Spu>
-  <Sku v-if="showState === StateCate.SKU_STATE" :editSpuInfo="editSpuInfo"></Sku>
+  <Sku v-if="showState === StateCate.SKU_STATE" :editSpuInfo="editSpuInfo" @changeState="changeState"></Sku>
 </template>
 
 <script lang="ts">
