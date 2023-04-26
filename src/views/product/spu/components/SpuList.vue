@@ -98,10 +98,16 @@ const currentPage = ref(1);
 // 每页条数改变
 const handleSizeChange = (val: number) => {
   pageSize.value = val;
+  currentPage.value = 1;
+  getSpuList();
+
 };
 // 当前页码改变
 const handleCurrentChange = (val: number) => {
-  currentPage.value = val;
+  pageSize.value = val;
+  
+  getSpuList();
+
 };
 
 // 1.获取spu分页数据(需要页码和页数和3id)
@@ -112,6 +118,8 @@ const getSpuList = async () => {
     cateStore.category3Id as number
   );
   spuList.value = res.records;
+
+  total.value = res.total;
 };
 
 // 2.监听3id变化发请求
