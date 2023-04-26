@@ -32,7 +32,7 @@
             :md="8"
             :lg="8"
             :xl="6"
-            v-for="(attr,index) in attrInfo"
+            v-for="(attr, index) in attrInfo"
             :key="attr.id"
           >
             <el-form-item :label="attr.attrName">
@@ -45,30 +45,34 @@
                   v-for="attrValue in attr.attrValueList"
                   :key="attrValue.id"
                   :label="attrValue.valueName"
-                  :value=" `${attr.id}:${attr.attrName}:${attrValue.id}:${attrValue.valueName}` "
-                >{{ attrValue.valueName }}</el-option>
+                  :value="`${attr.id}:${attr.attrName}:${attrValue.id}:${attrValue.valueName}`"
+                  >{{ attrValue.valueName }}</el-option
+                >
               </el-select>
             </el-form-item>
           </el-col>
         </el-row>
       </el-form-item>
-      <el-form-item label="销售属性">
-        <el-form label-width="100px">
+      <el-form-item label="销售属性" prop="skuSaleAttrValueList">
+        <el-form :inline="true"  label-width="100px">
           <el-form-item
-            :label="saleAttr.saleAttrName"
-            v-for="saleAttr in spuSaleAttrList"
-            :key="saleAttr.id"
-            label-width="100px"
+           
+          v-for="(saleAttr, index) in spuSaleAttrList"
+          :key="saleAttr.id"
+          :label="saleAttr.saleAttrName"
+           
           >
             <el-select
               placeholder="请选择"
               v-model="skuInfo.skuSaleAttrValueList[index]"
             >
               <el-option
-                :label="saleAttrValue.saleAttrValueName"
                 v-for="saleAttrValue in saleAttr.spuSaleAttrValueList"
+                :label="saleAttrValue.saleAttrValueName"
                 :key="saleAttrValue.id"
-              ></el-option>
+                :value="`${saleAttr.id}:${saleAttr.saleAttrName}:${saleAttrValue.id}:${saleAttrValue.saleAttrValueName}`"
+                >{{ saleAttrValue.saleAttrValueName }}</el-option
+              >
             </el-select>
           </el-form-item>
         </el-form>
@@ -84,7 +88,7 @@
           <el-table-column type="selection" width="55" />
           <el-table-column label="图片" prop="imgUrl">
             <template v-slot="{ row }">
-              <img :src="row.imgUrl" alt="" style="width:100px" />
+              <img :src="row.imgUrl" alt="" style="width: 100px" />
             </template>
           </el-table-column>
           <el-table-column
@@ -96,8 +100,11 @@
           </el-table-column>
           <el-table-column label="操作">
             <template v-slot="{ row }">
-              <el-button type="priamry" v-if="row.isDefault === '0'"
-                 @click="setDefaultAttr">设置默认属性</el-button
+              <el-button
+                type="priamry"
+                v-if="row.isDefault === '0'"
+                @click="setDefaultAttr(row)"
+                >设置默认属性</el-button
               >
               <el-button type="success" v-else>默认属性</el-button>
             </template>
@@ -105,7 +112,7 @@
         </el-table>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">确定</el-button>
+        <el-button type="primary" @click="">确定</el-button>
         <el-button @click="cancelSku">取消</el-button>
       </el-form-item>
     </el-form>
@@ -126,7 +133,7 @@ import { reqAttrInfo } from "@/api/product/attr";
 import { reqSpuSaleAttrList, reqSpuImageList } from "@/api/product/sku";
 const categoryStore = useCategoryListStore();
 const props = defineProps(["editSpuInfo"]);
-const emits = defineEmits(['changeState'])
+const emits = defineEmits(["changeState"]);
 const attrInfo = ref([]);
 const spuSaleAttrList = ref([]);
 const spuImageList = ref([]);
@@ -168,6 +175,11 @@ const skuInfo = reactive({
   // spuId: 0,
 });
 
+// 表单验证
+
+
+
+
 // 1.发请求获取平台属性，销售属性，图片列表
 onMounted(async () => {
   const id = props.editSpuInfo.id;
@@ -189,16 +201,13 @@ onMounted(async () => {
     console.log("spuSaleAttrList.value", resSpuSaleAttrList.value);
   }
   if (resSpuImageList.status === "fulfilled") {
-    spuImageList.value = resSpuImageList.value.map((item)=> {
+    spuImageList.value = resSpuImageList.value.map((item) => {
       return {
         ...item,
-      isDefault:'0'
-      }
-     
-    })
+        isDefault: "0",
+      };
+    });
     // 遍历添加属性 isDefault
-        
-
 
     console.log("spuImageList.value", spuImageList.value);
   }
@@ -208,18 +217,16 @@ onMounted(async () => {
   }
 });
 
-// 取消cancelSku
+//取消cancelSku
 const cancelSku = () => {
-  emits('changeState',1)
-}
+  emits("changeState", 1);
+};
 
-
-
-
-
-
-
-
+//设置默认属性
+const setDefaultAttr = (row) => {
+  spuImageList.value.forEach((item) => (item.isDefault = "0")),
+    (row.isDefault = "1");
+};
 
 interface User {
   date: string;
