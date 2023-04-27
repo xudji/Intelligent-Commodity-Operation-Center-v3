@@ -7,7 +7,10 @@ enum Api {
     saveSkuInfoApi = '/admin/product/saveSkuInfo',
     getSkuListBySpuApi = '/admin/product/findBySpuId',
     getSkuList = '/admin/product/list',
-    deleteSkuApi = '/admin/product/deleteSku'
+    deleteSkuApi = '/admin/product/deleteSku',
+    getOneSkuInfoApi = '/admin/product/getSkuById',
+    cancelSaleApi = '/admin/product/cancelSale',
+    onSaleApi = '/admin/product/onSale',    
 }
 
 // /admin/product/list/{page}/{limit}
@@ -35,11 +38,28 @@ const reqDeleteSku = (skuId: number) => {
     return request.delete(Api.deleteSkuApi + `/${skuId}`)
 }
 
+// 查看sku
+const reqGetOneSkuInfo = (skuId: number) => {
+    return request.get(Api.getOneSkuInfoApi + `/${skuId}`)
+}
+
+// 上架
+const reqOnSale = (skuId: number) => {
+    return request.get(Api.onSaleApi + `/${skuId}`)   
+}
+// 下架 
+const reqCancelSale = (skuId: number) => {
+    return request.get(Api.cancelSaleApi + `/${skuId}`)
+}
+
 export {
     reqSpuSaleAttrList,
     reqSpuImageList,
     reqSaveSkuInfo,
     reqGetSkuListBySpuId,
     reqGetSkuList,
-    reqDeleteSku
+    reqDeleteSku,
+    reqGetOneSkuInfo,
+    reqOnSale,
+    reqCancelSale
 }
