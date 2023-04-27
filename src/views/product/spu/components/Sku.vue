@@ -1,6 +1,11 @@
 <template>
   <el-card style="margin-top: 10px">
-    <el-form label-width="120px" ref="ruleFormRef" :rules="rules" :model="skuInfo">
+    <el-form
+      label-width="120px"
+      ref="ruleFormRef"
+      :rules="rules"
+      :model="skuInfo"
+    >
       <el-form-item label="SPU名称">
         <span>{{ props.editSpuInfo.spuName }}</span>
       </el-form-item>
@@ -26,30 +31,33 @@
         ></el-input>
       </el-form-item>
       <el-form-item label="平台属性" prop="skuAttrValueList">
-      <el-row :gutter="10">
-        <el-col
-          v-for="(attr, index) in attrInfo"
-          :key="attr.id"
-          :xs="24"
-          :sm="12"
-          :md="8"
-          :lg="8"
-          :xl="6"
-        >
-          <el-form-item :label="attr.attrName">
-            <el-select v-model="skuInfo.skuAttrValueList[index]" style="margin-bottom: 10px;">
-              <el-option
-                v-for="attrValue in attr.attrValueList"
-                :key="attrValue.id"
-                :label="attrValue.valueName"
-                :value="`${attr.id}:${attr.attrName}:${attrValue.id}:${attrValue.valueName}`"
-                >{{ attrValue.valueName }}</el-option
+        <el-row :gutter="10">
+          <el-col
+            v-for="(attr, index) in attrInfo"
+            :key="attr.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
+            :lg="8"
+            :xl="6"
+          >
+            <el-form-item :label="attr.attrName">
+              <el-select
+                v-model="skuInfo.skuAttrValueList[index]"
+                style="margin-bottom: 10px"
               >
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
-    </el-form-item>
+                <el-option
+                  v-for="attrValue in attr.attrValueList"
+                  :key="attrValue.id"
+                  :label="attrValue.valueName"
+                  :value="`${attr.id}:${attr.attrName}:${attrValue.id}:${attrValue.valueName}`"
+                  >{{ attrValue.valueName }}</el-option
+                >
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form-item>
       <el-form-item label="销售属性" prop="skuSaleAttrValueList">
         <el-form :inline="true" label-width="100px">
           <el-form-item
@@ -59,7 +67,8 @@
           >
             <el-select
               placeholder="请选择"
-              v-model="skuInfo.skuSaleAttrValueList[index]" style="margin-bottom: 10px;"
+              v-model="skuInfo.skuSaleAttrValueList[index]"
+              style="margin-bottom: 10px"
             >
               <el-option
                 v-for="saleAttrValue in saleAttr.spuSaleAttrValueList"
@@ -74,7 +83,6 @@
       </el-form-item>
       <el-form-item label="图片列表">
         <el-table
-          ref="multipleTableRef"
           :data="spuImageList"
           style="width: 100%"
           @selection-change="handleSelectionChange"
@@ -173,12 +181,29 @@ const skuInfo = reactive({
   ],
   // spuId: 0,
 });
-
-const skuAttrValueListValidator = (rule: any, value: any, callback: any) => {
-  if (!value.length) {
-    callback(new Error("请至少选择一项销售属性值"));
+// 销售属性
+const skuSaleAttrValueListValidator = (
+  rule: any,
+  value: any,
+  callback: any
+) => {
+  if (!spuSaleAttrValueList.value.length) {
+    callback(new Error("请至少选择一项销售属性值..."));
   }
   callback();
+};
+// 图片
+const skuImageListValidator = (rule: any, value: any, callback: any) => {
+  if (value.length < 3) {
+    callback(new Error("请至少选择三张图片..."));
+  }
+  callback();
+};
+//平台属性
+const skuAttrValueListValidator = (rule: any, value: any, callback: any) => {
+  if (!attrValueList.value.length) {
+    return callback(new Error("请至少选择一项平台属性..."));
+  }
 };
 
 // 表单验证
@@ -193,13 +218,15 @@ const rules = reactive<FormRules>({
   skuSaleAttrValueList: [
     {
       required: true,
-      message: "请至少选择一个平台属性值",
+      validator: skuSaleAttrValueListValidator,
       trigger: "change",
-      type: "array",
     },
   ],
   skuAttrValueList: [
     { required: true, validator: skuAttrValueListValidator, trigger: "blur" },
+  ],
+  skuImageList: [
+    { required: true, validator: skuImageListValidator, trigger: "change" },
   ],
 });
 
@@ -248,7 +275,7 @@ const cancelSku = () => {
 const setDefaultAttr = (row) => {
   spuImageList.value.forEach((item) => (item.isDefault = "0")),
     (row.isDefault = "1");
-    skuInfo.skuDefaultImg = row.imgUrl;
+  skuInfo.skuDefaultImg = row.imgUrl;
 };
 
 //确定
@@ -256,6 +283,7 @@ const submitSkuForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate((valid) => {
     if (valid) {
+      // 查找一下有没有选默认图片
       console.log("submit!");
     } else {
       console.log("error submit!");
@@ -263,15 +291,9 @@ const submitSkuForm = async (formEl: FormInstance | undefined) => {
   });
 };
 
-interface User {
-  date: string;
-  name: string;
-  address: string;
-}
 const multipleTableRef = ref<InstanceType<typeof ElTable>>();
-const multipleSelection = ref<User[]>([]);
-const handleSelectionChange = (val: User[]) => {
-  multipleSelection.value = val;
+const handleSelectionChange = (val) => {
+  spuImageList.value = val;
 };
 </script>
 <style scoped></style>
