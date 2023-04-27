@@ -130,6 +130,7 @@ const background = ref<boolean>(false);
 const disabled = ref<boolean>(false);
 const total = ref<number>(100);
 const currentPage = ref<number>(1);
+
 const skuList = ref([]);
 const dialogTableVisible = ref(false);
 // 每页条数改变

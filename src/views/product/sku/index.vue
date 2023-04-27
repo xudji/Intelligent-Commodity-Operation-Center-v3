@@ -1,19 +1,146 @@
 <template>
-  <div>
-    sku
-  </div>
+  <el-card>
+    <el-table border :data="skuList">
+      <el-table-column
+        type="index"
+        label="序号"
+        width="100"
+        align="center"
+      ></el-table-column>
+      <el-table-column prop="skuName" label="名称"></el-table-column>
+      <el-table-column prop="skuDesc" label="描述"></el-table-column>
+      <el-table-column label="默认图片">
+        <template v-slot="{ row }">
+          <el-image :src="row.skuDefaultImg" style="width: 100px"> </el-image>
+        </template>
+      </el-table-column>
+      <el-table-column prop="weight" label="重量(KG)"></el-table-column>
+      <el-table-column prop="price" label="价格(无)"></el-table-column>
+      <el-table-column label="操作" align="center" width="220px">
+        <template v-slot="{ row }">
+          <el-tooltip effect="dark" content="添加SKU" placement="top">
+            <el-button type="primary" size="small" :icon="Plus"></el-button>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="修改SPU" placement="top">
+            <el-button type="primary" size="small" :icon="Edit"></el-button>
+          </el-tooltip>
+          <el-tooltip effect="dark" content="查看SKU列表" placement="top">
+            <el-button type="info" size="small" :icon="InfoFilled" @click="checkSku(row.id)"></el-button>
+          </el-tooltip>
+          <el-popconfirm :title="`确定删除数据吗?`" @confirm="delSku(row.id)">
+            <template #reference>
+              <div style="display: inline-block; margin-left: 10px">
+                <el-tooltip
+                  class="box-item"
+                  effect="dark"
+                  content="删除SPU"
+                  placement="top"
+                >
+                  <el-button
+                    type="danger"
+                    size="small"
+                    :icon="Delete"
+                  ></el-button>
+                </el-tooltip>
+              </div>
+            </template>
+          </el-popconfirm>
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :page-sizes="[3, 5, 7, 11]"
+      :small="small"
+      :disabled="disabled"
+      :background="background"
+      layout="prev, pager, next, jumper, ->, sizes, total"
+      :total="total"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
+
+    <el-drawer
+      v-model="table"
+      title="I have a nested table inside!"
+      direction="rtl"
+      size="50%"
+    >
+      <el-table :data="gridData">
+        <el-table-column property="date" label="Date" width="150" />
+        <el-table-column property="name" label="Name" width="200" />
+        <el-table-column property="address" label="Address" />
+      </el-table>
+    </el-drawer>
+
+  </el-card>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 export default defineComponent({
-  name: 'Sku',
-})
+  name: "Sku",
+});
 </script>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted, reactive, watch, nextTick } from "vue";
+import {
+  Plus,
+  Delete,
+  Edit,
+  InfoFilled,
+  Top,
+  Bottom,
+} from "@element-plus/icons-vue";
+import { ElMessage,ElDrawer, ElMessageBox } from "element-plus";
+import { reqGetSkuList, reqDeleteSku } from "@/api/product/sku";
+const skuList = ref([]);
 
+const table = ref(false)
+const tableSkuList = ref([]); 
 
+// 分页器数据
+const pageSize = ref<number>(3);
+const small = ref<boolean>(false);
+const background = ref<boolean>(false);
+const disabled = ref<boolean>(false);
+const total = ref<number>(100);
+const currentPage = ref<number>(1);
+
+// 每页条数改变
+const handleSizeChange = (val: number) => {
+  pageSize.value = val;
+  currentPage.value = 1;
+  getSkuList();
+};
+// 当前页码改变
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val;
+  getSkuList();
+};
+
+// 1.获取skuList
+const getSkuList = async () => {
+  const res = await reqGetSkuList(currentPage.value, pageSize.value);
+  skuList.value = res.records;
+  total.value = res.total;
+  console.log(res);
+};
+// 2.挂载发请求
+onMounted(() => {
+  getSkuList();
+});
+// 3.确定删除吗
+const delSku = async (id: number) => {
+  await reqDeleteSku(id);
+  ElMessage.success("删除成功！");
+  getSkuList();
+};
+// 3.查看checkSku
+const checkSku = (id:number) => {
+
+}
 </script>
 
 <style scoped></style>
