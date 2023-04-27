@@ -132,11 +132,16 @@ export default defineComponent({
 </script>
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from "vue";
-import { ElTable } from "element-plus";
+import { ElMessage, ElTable } from "element-plus";
 import { useCategoryListStore } from "@/stores/categoryList";
 import { reqAttrInfo } from "@/api/product/attr";
-import { reqSpuSaleAttrList, reqSpuImageList } from "@/api/product/sku";
+import {
+  reqSpuSaleAttrList,
+  reqSpuImageList,
+  reqSaveSkuInfo,
+} from "@/api/product/sku";
 import type { FormInstance, FormRules } from "element-plus";
+import { StateCate } from "../types";
 const categoryStore = useCategoryListStore();
 const props = defineProps(["editSpuInfo"]);
 const emits = defineEmits(["changeState"]);
@@ -181,55 +186,72 @@ const skuInfo = reactive({
   ],
   // spuId: 0,
 });
-// 销售属性
-const skuSaleAttrValueListValidator = (
-  rule: any,
-  value: any,
-  callback: any
-) => {
-  if (!spuSaleAttrValueList.value.length) {
-    callback(new Error("请至少选择一项销售属性值..."));
+const skuAttrValueListValidator = (rule: any, value: any, callback: any) => {
+  // rule 校验规则规则对象
+  // value 表示要校验的数据值 有可能是对象有可能是数组
+  // callback是执行函数
+  if (!value.length) {
+    return callback(new Error("请至少选择一个平台属性..."));
   }
   callback();
 };
-// 图片
+
 const skuImageListValidator = (rule: any, value: any, callback: any) => {
   if (value.length < 3) {
-    callback(new Error("请至少选择三张图片..."));
+    return callback(new Error("请至少选择三张图片..."));
   }
   callback();
-};
-//平台属性
-const skuAttrValueListValidator = (rule: any, value: any, callback: any) => {
-  if (!attrValueList.value.length) {
-    return callback(new Error("请至少选择一项平台属性..."));
-  }
 };
 
 // 表单验证
 const rules = reactive<FormRules>({
   skuName: [
-    { required: true, message: "请输入sku名称", trigger: "blur" },
-    { min: 1, max: 10, message: "sku名称应该是在1到10之间", trigger: "blur" },
-  ],
-  price: [{ required: true, message: "添加价格", trigger: "change" }],
-  weight: [{ required: true, message: "请添加重量", trigger: "change" }],
-  skuDesc: [{ required: true, message: "请添加sku描述", trigger: "blur" }],
-  skuSaleAttrValueList: [
     {
       required: true,
-      validator: skuSaleAttrValueListValidator,
+      message: "请输入SKU名称",
+      trigger: "change",
+    },
+  ],
+  price: [
+    {
+      required: true,
+      message: "请输入价格",
+      trigger: "change",
+    },
+  ],
+  weight: [
+    {
+      required: true,
+      message: "请输入重量",
+      trigger: "change",
+    },
+  ],
+  skuDesc: [
+    {
+      required: true,
+      message: "请输入SKU描述",
       trigger: "change",
     },
   ],
   skuAttrValueList: [
-    { required: true, validator: skuAttrValueListValidator, trigger: "blur" },
+    {
+      required: true,
+      validator: skuAttrValueListValidator,
+      trigger: "change",
+    },
   ],
   skuImageList: [
     { required: true, validator: skuImageListValidator, trigger: "change" },
   ],
+  skuSaleAttrValueList: [
+    {
+      type: "array",
+      required: true,
+      message: "请至少一个选择销售属性",
+      trigger: "change",
+    },
+  ],
 });
-
 // 1.发请求获取平台属性，销售属性，图片列表
 onMounted(async () => {
   const id = props.editSpuInfo.id;
@@ -248,7 +270,6 @@ onMounted(async () => {
   // 将响应数据赋值给响应数据对象
   if (resSpuSaleAttrList.status === "fulfilled") {
     spuSaleAttrList.value = resSpuSaleAttrList.value;
-    console.log("spuSaleAttrList.value", resSpuSaleAttrList.value);
   }
   if (resSpuImageList.status === "fulfilled") {
     spuImageList.value = resSpuImageList.value.map((item) => {
@@ -257,12 +278,9 @@ onMounted(async () => {
         isDefault: "0",
       };
     });
-    // 遍历添加属性 isDefault
-    console.log("spuImageList.value", spuImageList.value);
   }
   if (resAttrInfo.status === "fulfilled") {
     attrInfo.value = resAttrInfo.value;
-    console.log("attrInfo.value", attrInfo.value);
   }
 });
 
@@ -270,30 +288,63 @@ onMounted(async () => {
 const cancelSku = () => {
   emits("changeState", 1);
 };
-
 //设置默认属性
 const setDefaultAttr = (row) => {
-  spuImageList.value.forEach((item) => (item.isDefault = "0")),
-    (row.isDefault = "1");
+  spuImageList.value.forEach((item) => {
+    item.isDefault = "0";
+  });
+  row.isDefault = "1";
   skuInfo.skuDefaultImg = row.imgUrl;
 };
-
 //确定
-const submitSkuForm = async (formEl: FormInstance | undefined) => {
+const submitSkuForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
-  await formEl.validate((valid) => {
+  formEl.validate(async (valid) => {
     if (valid) {
-      // 查找一下有没有选默认图片
-      console.log("submit!");
+      const skuImg = skuInfo.skuImageList.find(
+        (item) => item.imgUrl === skuInfo.skuDefaultImg
+      );
+      if (!skuImg) return ElMessage.error("请在所选图片中指定默认图片");
+      // 处理平台属性 undefined清除
+      skuInfo.skuAttrValueList = skuInfo.skuAttrValueList
+        .filter(Boolean)
+        .map((item) => {
+          const [attrId, attrName, valueId, valueName] = item.split(":");
+          return {
+            attrId,
+            attrName,
+            valueId,
+            valueName,
+          };
+        });
+      // 处理销售属性
+      skuInfo.skuSaleAttrValueList = skuInfo.skuSaleAttrValueList
+        .filter(Boolean)
+        .map((item) => {
+          const [saleAttrId, saleAttrName, saleAttrValueId, saleAttrValueName] =
+            item.split(":");
+          return {
+            saleAttrId,
+            saleAttrName,
+            saleAttrValueId,
+            saleAttrValueName,
+          };
+        });
+      skuInfo.category3Id = categoryStore.category3Id as number;
+      skuInfo.spuId = props.editSpuInfo.id as number;
+      await reqSaveSkuInfo(skuInfo);
+      ElMessage.success("添加sku成功...");
+      emits("changeState", StateCate.SPULIST_STATE);
     } else {
       console.log("error submit!");
+      return false;
     }
   });
 };
 
 const multipleTableRef = ref<InstanceType<typeof ElTable>>();
 const handleSelectionChange = (val) => {
-  spuImageList.value = val;
+  skuInfo.skuImageList = val;
 };
 </script>
 <style scoped></style>

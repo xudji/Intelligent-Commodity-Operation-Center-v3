@@ -21,21 +21,32 @@
         <el-table-column label="操作">
           <template v-slot="{ row }">
             <el-tooltip effect="dark" content="添加SKU" placement="top">
-              <el-button type="primary" size="small" :icon="Plus" @click="addSKU(row)"></el-button>
+              <el-button
+                type="primary"
+                size="small"
+                :icon="Plus"
+                @click="addSKU(row)"
+              ></el-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="修改SPU" placement="top">
-              <el-button type="primary" size="small" :icon="Edit" @click="editSpu(row)"></el-button>
+              <el-button
+                type="primary"
+                size="small"
+                :icon="Edit"
+                @click="editSpu(row)"
+              ></el-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="查看SKU列表" placement="top">
               <el-button
                 type="info"
                 size="small"
                 :icon="InfoFilled"
+                @click="toCheckSkuList(row.id)"
               ></el-button>
             </el-tooltip>
-            <el-popconfirm :title="`确定删除数据吗?`" @confirm="delSpu(row.id)" >
+            <el-popconfirm :title="`确定删除数据吗?`" @confirm="delSpu(row.id)">
               <template #reference>
-                <div style="display: inline-block; margin-left: 10px;">
+                <div style="display: inline-block; margin-left: 10px">
                   <el-tooltip
                     class="box-item"
                     effect="dark"
@@ -67,6 +78,30 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
       />
+
+      <el-dialog v-model="dialogTableVisible" title="查看sku列表">
+        <el-table :data="skuList">
+          <el-table-column
+            property="skuName"
+            label="名称"
+            width="150"
+          ></el-table-column>
+          <el-table-column
+            property="price"
+            label="价格(元)"
+            width="200"
+          ></el-table-column>
+          <el-table-column label="默认图片">
+            <template v-slot="{ row }">
+              <el-image
+                :src="row.skuDefaultImg"
+                style="width: 100px"
+                fit="fill"
+              ></el-image>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-dialog>
     </div>
   </el-card>
 </template>
@@ -80,13 +115,14 @@ export default defineComponent({
 <script lang="ts" setup>
 import { ref, onMounted, reactive, watch, nextTick } from "vue";
 import { Plus, Delete, Edit, InfoFilled } from "@element-plus/icons-vue";
-import { reqSpuList, reqDelSpu,reqUpdateSpu } from "@/api/product/spu";
+import { reqSpuList, reqDelSpu, reqUpdateSpu } from "@/api/product/spu";
+import { reqGetSkuListBySpuId } from "@/api/product/sku";
 import { useCategoryListStore } from "@/stores/categoryList";
 import { ElMessage } from "element-plus";
-import type { SpuInfoModel } from '@/api/product/model/spuModels';
+import type { SpuInfoModel } from "@/api/product/model/spuModels";
 const cateStore = useCategoryListStore();
 const spuList = ref<SpuInfoModel[]>([]);
-const emits = defineEmits(["changeState","saveSpuInfo"]);
+const emits = defineEmits(["changeState", "saveSpuInfo"]);
 // 分页器数据
 const pageSize = ref<number>(3);
 const small = ref<boolean>(false);
@@ -94,19 +130,18 @@ const background = ref<boolean>(false);
 const disabled = ref<boolean>(false);
 const total = ref<number>(100);
 const currentPage = ref<number>(1);
-
+const skuList = ref([]);
+const dialogTableVisible = ref(false);
 // 每页条数改变
 const handleSizeChange = (val: number) => {
   pageSize.value = val;
   currentPage.value = 1;
   getSpuList();
-
 };
 // 当前页码改变
 const handleCurrentChange = (val: number) => {
-  pageSize.value = val;
+  currentPage.value = val;
   getSpuList();
-
 };
 
 // 1.获取spu分页数据(需要页码和页数和3id)
@@ -117,7 +152,6 @@ const getSpuList = async () => {
     cateStore.category3Id as number
   );
   spuList.value = res.records;
-
   total.value = res.total;
 };
 
@@ -137,24 +171,31 @@ watch(
 // 3.添加Spu
 const AddSpu = () => {
   emits("changeState", 2);
-  emits('saveSpuInfo',{})
+  emits("saveSpuInfo", {});
 };
 // 4.删除SPu
 const delSpu = async (id: number) => {
   await reqDelSpu(id);
   ElMessage.success("删除成功");
-  getSpuList()
+  getSpuList();
 };
 //5.修改Spu
-const editSpu = async (row:SpuInfoModel) => {
-   // 传数据回显
- emits('saveSpuInfo',row)
- emits("changeState", 2);
-}
+const editSpu = async (row: SpuInfoModel) => {
+  // 传数据回显
+  emits("saveSpuInfo", row);
+  emits("changeState", 2);
+};
 //6.添加sku
-const addSKU = (row:SpuInfoModel) => {
- emits('saveSpuInfo',row)
- emits("changeState", 3);
-}
+const addSKU = (row: SpuInfoModel) => {
+  emits("saveSpuInfo", row);
+  emits("changeState", 3);
+};
+//7.查看skuList数据
+const toCheckSkuList = async (id) => {
+  const res = await reqGetSkuListBySpuId(id);
+  skuList.value = res;
+  console.log(skuList.value);
+  dialogTableVisible.value = true;
+};
 </script>
 <style scoped></style>
