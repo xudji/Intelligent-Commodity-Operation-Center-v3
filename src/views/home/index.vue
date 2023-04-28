@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    Hello, {{userInfoStore.name}}
+    <Monitor></Monitor>
   </div>
 </template>
 
@@ -11,7 +11,7 @@ export default {
 </script>
 <script lang="ts" setup>
 import { useUserInfoStore } from '@/stores/userInfo';
-
+import Monitor from './monitor/index.vue'
 const userInfoStore = useUserInfoStore()
 
 </script>
@@ -19,8 +19,7 @@ const userInfoStore = useUserInfoStore()
 <style scoped>
   .home {
     width: 100%;
-    height: 100%;
     padding: 20px;
-    font-size: 30px;
+    background-color: #eee;
   }
 </style>

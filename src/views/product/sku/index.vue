@@ -215,14 +215,14 @@ const checkSku = async (id: number) => {
   console.log(res);
 };
 // 4.上架
-const toOnSale = async (id: number,index) => {
+const toOnSale = async (id: number,index:number) => {
   await reqOnSale(id);
   skuInfo.value[index].isOnsale = 0 
   ElMessage.success("上架成功！");
 };
 
 // 5.下架
-const toCancelSale = async (id: number,index) => {
+const toCancelSale = async (id: number,index:number) => {
   await reqCancelSale(id);
   skuInfo.value[index].isOnsale = 1 
   ElMessage.info("下架成功！");
