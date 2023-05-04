@@ -10,12 +10,14 @@ import ElSvg from './components/SvgIcon/ElSvg'
 import './permission'
 // 开启mock服务
 import './mockServer'
+import { vueEcharts } from '@/plugins/index'
 const app = createApp(App)
 
 
 ElSvg(app)
 app.use(pinia)
   .use(router)
+  .use(vueEcharts)
   .use(ElementPlus, {
     locale: zhCn,
   })
