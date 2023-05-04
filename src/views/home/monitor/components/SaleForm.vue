@@ -37,14 +37,14 @@ export default defineComponent({
 });
 </script>
 <script lang="ts" setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
+import { reqGetReportData } from "@/api/mock/index";
+
 const activeIndex = ref("1");
 const tabPosition = ref("top");
-
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log(key, keyPath);
 };
-
 const size = ref<"default" | "large" | "small">("default");
 const value2 = ref("");
 const shortcuts = [
@@ -76,6 +76,10 @@ const shortcuts = [
     },
   },
 ];
+
+
+
+
 </script>
 
 <style scoped lang="scss">

@@ -8,12 +8,12 @@ import router from './router'
 import './styles/index.scss'
 import ElSvg from './components/SvgIcon/ElSvg'
 import './permission'
-
+// 开启mock服务
+import './mockServer'
 const app = createApp(App)
 
 
 ElSvg(app)
-
 app.use(pinia)
   .use(router)
   .use(ElementPlus, {
