@@ -1,25 +1,56 @@
 <template>
-  <CommonCard title="今日销售额" value="303,467,99">
+  <CommonCard title="今日销售额" :value="orderToday">
     <template #default>
       <div class="compare">
-        <div class="emphasis">日同比  &nbsp;-19.16% &nbsp; <span class="decrement"></span></div>
-        <div class="emphasis">月同比  &nbsp;56.67%  &nbsp;<span class="increment"></span></div>
+        <div class="emphasis">
+          日同比 &nbsp;{{ salesGrowthLastDay }}% &nbsp;
+          <span class="decrement"></span>
+        </div>
+        <div class="emphasis">
+          月同比 &nbsp;{{ salesGrowthLastMonth }}% &nbsp;<span
+            class="increment"
+          ></span>
+        </div>
       </div>
     </template>
     <template #footer>
-      <div>昨日销售额 <span class="emphasis">￥ 360,000,00</span></div>
+      <div>
+        昨日销售额 <span class="emphasis">￥ {{ salesLastDay }}</span>
+      </div>
     </template>
   </CommonCard>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 export default defineComponent({
-  name: 'TodaySales'
+  name: "TodaySales",
 });
 </script>
 <script lang="ts" setup>
-import CommonCard from './CommonCard.vue';
+import { ref, reactive, onMounted, computed } from "vue";
+import CommonCard from "./CommonCard.vue";
+import { useReportDataStore } from "@/stores/reportData";
+const reportDataStore = useReportDataStore();
+// 获取数据渲染
+
+// 获取销售额数据并渲染
+// 1.今日销售额
+const orderToday = computed(() => reportDataStore.reportData.orderToday);
+// 2.日同比
+const salesGrowthLastDay = computed(
+  () => reportDataStore.reportData.salesGrowthLastDay
+);
+// 3.月同比
+const salesGrowthLastMonth = computed(
+  () => reportDataStore.reportData.salesGrowthLastMonth
+);
+// 4.昨日销售额
+const salesLastDay = computed(() => reportDataStore.reportData.salesLastDay);
+
+
+
+
 </script>
 
 <style scoped lang="scss">
@@ -28,7 +59,7 @@ import CommonCard from './CommonCard.vue';
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  >div {
+  > div {
     display: flex;
     align-items: center;
   }

@@ -6,20 +6,25 @@
 
 <script lang="ts">
 export default {
-  name: 'Home',
-}
+  name: "Home",
+};
 </script>
 <script lang="ts" setup>
-import { useUserInfoStore } from '@/stores/userInfo';
-import Monitor from './monitor/index.vue'
-const userInfoStore = useUserInfoStore()
-
+import { onMounted } from "vue";
+import { useUserInfoStore } from "@/stores/userInfo";
+import { useReportDataStore } from "@/stores/reportData";
+import Monitor from "./monitor/index.vue";
+const userInfoStore = useUserInfoStore();
+const reportDataStore = useReportDataStore();
+onMounted(() => {
+  reportDataStore.getReportData();
+});
 </script>
 
 <style scoped>
-  .home {
-    width: 100%;
-    padding: 20px;
-    background-color: #eee;
-  }
+.home {
+  width: 100%;
+  padding: 20px;
+  background-color: #eee;
+}
 </style>

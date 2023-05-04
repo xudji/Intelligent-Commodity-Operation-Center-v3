@@ -39,7 +39,8 @@ export default defineComponent({
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from "vue";
 import { reqGetReportData } from "@/api/mock/index";
-
+import { useReportDataStore } from "@/stores/reportData";
+const reportDataStore = useReportDataStore();
 const activeIndex = ref("1");
 const tabPosition = ref("top");
 const handleSelect = (key: string, keyPath: string[]) => {
@@ -77,9 +78,10 @@ const shortcuts = [
   },
 ];
 
-
-
-
+// 获取数据渲染
+/* onMounted(() => {
+  reportDataStore.getReportData();
+}); */
 </script>
 
 <style scoped lang="scss">
